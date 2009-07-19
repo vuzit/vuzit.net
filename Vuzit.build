@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<!-- 
+  NAnt build script for the Vuzit.Net Library 
+  http://vuzit.com/
+  http://nant.sf.net/
+-->
+<project name="Vuzit.Net" default="build" basedir=".">
+	<description>Vuzit.Net project build script</description>
+	<property name="debug" value="false" />
+	<property name="project.name" value="Vuzit.Net"/>
+	<property name="project.bin" value="Vuzit.Net\Bin"/>
+	<property name="project.src" value="Vuzit.Net"/>
+	<property name="project.doc" value="Vuzit.Net\Doc"/>
+	<property name="lang" value="en"/>
+	<property name="use-strong" value="NOSTRONG"/>
+
+	<target name="clean">
+		<delete dir="${project.bin}\DotNet" failonerror="false" />
+		<delete dir="${project.bin}\Mono" failonerror="false" />
+	</target>
+	
+	<target name="clean-documentation">
+		<call target="clean" />
+		<delete>
+			<fileset>
+				<include name="${project.doc}\chm\*.chm" />
+				<include name="${project.doc}\html\*.*" />
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="build">
+		<call target="build-dotnet-2.0" />
+		<call target="build-dotnet-3.5" />
+		<call target="build-vuzitcl" />
+		<call target="build-mono" />
+	</target>
+
+	<target name="build-documentation">
+    <!-- Some version of .NET must be installed first. -->
+    <call target="build-dotnet-3.5" />
+		<ndoc>
+			<assemblies basedir="${build.bin}">
+				<include name="Vuzit.Net.dll" />
+			</assemblies>
+      <summaries basedir="${project.src}">
+        <include name="Vuzit.Net.xml" />
+      </summaries>
+			<documenters>
+				<documenter name="MSDN">
+					<property name="OutputDirectory" value="${project.doc}\html" />
+					<property name="HtmlHelpName" value="Vuzit.Net-Reference" />
+					<property name="HtmlHelpCompilerFilename" value="hhc.exe" />
+					<property name="IncludeFavorites" value="False" />
+					<property name="Title" 
+						value="Vuzit.Net Library API Reference - http://github.com/vuzit/vuzit.net" />
+					<property name="CopyrightText" 
+							  value="Copyright (c) 2009 Brent R. Matzelle, Vuzit LLC" />
+				</documenter>
+			</documenters>
+		</ndoc>
+		<move file="${project.doc}\html\Vuzit.Net-Reference.chm" 
+			  tofile="${project.doc}\chm\Vuzit.Net-Reference.chm" />
+	</target>
+	
+	<target name="build-dotnet-2.0">
+		<property name="build-version" value="NET_2_0" />
+		<property name="runtime-name" value="DotNet" />
+		<property name="current.runtime.config" value="net" />
+		<property name="current.runtime.version" value="2.0" />
+		<call target="run-build" />		
+	</target>
+
+	<target name="build-dotnet-3.5">
+		<property name="build-version" value="NET_3_5" />
+		<property name="runtime-name" value="DotNet" />
+		<property name="current.runtime.config" value="net" />
+		<property name="current.runtime.version" value="3.5" />
+		<call target="run-build" />	
+	</target>
+	
+	<target name="build-mono">
+		<property name="build-version" value="MONO_2_2" />
+		<property name="runtime-name" value="Mono" />
+		<property name="current.runtime.config" value="mono" />
+		<property name="current.runtime.version" value="2.2" />
+		<call target="run-mono-build" />
+	</target>
+	
+	<target name="run-mono-build">
+		<mkdir dir="${project.bin}\Mono\${current.runtime.version}\Release" />
+		<property name="build.bin" value="${project.bin}\Mono\${current.runtime.version}\Release" />
+
+		<exec program="gmcs.bat">
+			<arg value="-target:library"/>
+			<arg value="-out:${build.bin}\${project.name}.dll"/>
+			<arg value="-reference:System.dll"/>
+			<arg value="-reference:System.Xml.dll"/>
+			<arg value="-reference:System.Web.dll"/>
+			<arg value="-define:${build-version}"/>
+			<arg value="-define:${use-strong}"/>
+
+			<arg value="${project.src}\Properties\AssemblyInfo.cs" />
+			<arg value="${project.src}\Source\Document.cs" />
+			<arg value="${project.src}\Source\Exception.cs" />
+			<arg value="${project.src}\Source\Service.cs" />
+		</exec>
+	</target>
+	
+	<target name="run-build">
+		<property name="nant.settings.currentframework" value="${current.runtime.config}-${current.runtime.version}" />
+		<mkdir dir="${project.bin}\${runtime-name}\${current.runtime.version}\Debug" />
+		<mkdir dir="${project.bin}\${runtime-name}\${current.runtime.version}\Release" />
+
+		<property name="debug" value="true" />
+		<property name="build.bin" value="${project.bin}\${runtime-name}\${current.runtime.version}\Debug" />
+		<call target="build-version" />
+		
+		<property name="debug" value="false" />
+		<property name="build.bin" value="${project.bin}\${runtime-name}\${current.runtime.version}\Release" />
+		<call target="build-version" />
+	</target>
+	
+	<target name="build-version" description="Compiles the project DLL">
+		<csc target="library" 
+			define="${build-version};${use-strong}"
+			output="${build.bin}\${project.name}.dll" debug="${debug}">
+			<sources>
+				<include name="${project.src}\Properties\*.cs" />
+				<include name="${project.src}\Source\*.cs" />
+			</sources>
+			<references>
+				<include asis="true" name="System.dll"/>
+				<include asis="true" name="System.Xml.dll"/>
+				<include asis="true" name="System.Web.dll"/>
+			</references>
+		</csc>
+	</target>
+
+	<target name="build-vuzitcl" description="Builds the VuzitCL command line app">
+   <copy file="${build.bin}\${project.name}.dll" 
+			   tofile="VuzitCL\Bin\${project.name}.dll" />
+   <csc target="exe" output="VuzitCL\Bin\VuzitCL.exe" debug="false">
+     <sources>
+       <include name="VuzitCL\*.cs" />
+       <include name="VuzitCL\Properties\*.cs" />
+     </sources>
+     <references>
+       <include asis="true" name="System.dll"/>
+       <include asis="true" name="System.Xml.dll"/>
+       <include name="VuzitCL\Bin\${project.name}.dll"/>
+     </references>
+   </csc>
+  </target>
+</project>
