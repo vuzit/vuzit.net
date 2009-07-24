@@ -5,7 +5,16 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("VuzitCL - Vuzit Web services command line application")]
+#if (NET_2_0)
+[assembly: AssemblyTitle("VuzitCL command line for .NET Framework 2.0")]
+#elif (NET_3_5)
+[assembly: AssemblyTitle("VuzitCL command line for .NET Framework 3.5")]
+#elif (MONO_2_2)
+[assembly: AssemblyTitle("VuzitCL command line for Mono 2.2")]
+#else
+[assembly: AssemblyTitle("VuzitCL - Vuzit Web services command line")]
+#endif
+
 [assembly: AssemblyDescription("Command line application for the Vuzit Web Services layer")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Vuzit LLC - http://vuzit.com/")]

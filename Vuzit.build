@@ -14,11 +14,15 @@
 	<property name="lang" value="en"/>
 	<property name="use-strong" value="NOSTRONG"/>
 
+  <!-- Cleans the entire code build -->
 	<target name="clean">
 		<delete dir="${project.bin}\DotNet" failonerror="false" />
 		<delete dir="${project.bin}\Mono" failonerror="false" />
+		<delete dir="${project.bin}" failonerror="false" />
+		<delete dir="VuzitCL\Bin" failonerror="false" />
 	</target>
 	
+  <!-- Cleans the documentation build -->
 	<target name="clean-documentation">
 		<call target="clean" />
 		<delete>
@@ -29,13 +33,17 @@
 		</delete>
 	</target>
 
+  <!-- Builds all DLL and executable files -->
 	<target name="build">
 		<call target="build-dotnet-2.0" />
+		<call target="build-net-vuzitcl" />
 		<call target="build-dotnet-3.5" />
-		<call target="build-vuzitcl" />
-		<call target="build-mono" />
+		<call target="build-net-vuzitcl" />
+		<call target="build-mono-2.2" />
+		<call target="build-vuzitcl-mono" />
 	</target>
 
+  <!-- Builds the documentation -->
 	<target name="build-documentation">
     <!-- Some version of .NET must be installed first. -->
     <call target="build-dotnet-3.5" />
@@ -63,23 +71,26 @@
 			  tofile="${project.doc}\chm\Vuzit.Net-Reference.chm" />
 	</target>
 	
+  <!-- Sets the parameters for the .NET 2.0 DLL -->
 	<target name="build-dotnet-2.0">
 		<property name="build-version" value="NET_2_0" />
 		<property name="runtime-name" value="DotNet" />
 		<property name="current.runtime.config" value="net" />
 		<property name="current.runtime.version" value="2.0" />
-		<call target="run-build" />		
+		<call target="run-net-build" />		
 	</target>
 
+  <!-- Sets the parameters for the .NET 3.5 DLL -->
 	<target name="build-dotnet-3.5">
 		<property name="build-version" value="NET_3_5" />
 		<property name="runtime-name" value="DotNet" />
 		<property name="current.runtime.config" value="net" />
 		<property name="current.runtime.version" value="3.5" />
-		<call target="run-build" />	
+		<call target="run-net-build" />	
 	</target>
 	
-	<target name="build-mono">
+  <!-- Sets the parameters for the Mono 2.2 DLL -->
+	<target name="build-mono-2.2">
 		<property name="build-version" value="MONO_2_2" />
 		<property name="runtime-name" value="Mono" />
 		<property name="current.runtime.config" value="mono" />
@@ -87,6 +98,7 @@
 		<call target="run-mono-build" />
 	</target>
 	
+  <!-- Builds the previously specified Mono build -->
 	<target name="run-mono-build">
 		<mkdir dir="${project.bin}\Mono\${current.runtime.version}\Release" />
 		<property name="build.bin" value="${project.bin}\Mono\${current.runtime.version}\Release" />
@@ -107,21 +119,20 @@
 		</exec>
 	</target>
 	
-	<target name="run-build">
-		<property name="nant.settings.currentframework" value="${current.runtime.config}-${current.runtime.version}" />
-		<mkdir dir="${project.bin}\${runtime-name}\${current.runtime.version}\Debug" />
+  <!-- Builds the previously specified .NET build -->
+	<target name="run-net-build">
+    <property name="nant.settings.currentframework" 
+              value="${current.runtime.config}-${current.runtime.version}" />
 		<mkdir dir="${project.bin}\${runtime-name}\${current.runtime.version}\Release" />
 
 		<property name="debug" value="true" />
-		<property name="build.bin" value="${project.bin}\${runtime-name}\${current.runtime.version}\Debug" />
-		<call target="build-version" />
+		<property name="build.bin" 
+              value="${project.bin}\${runtime-name}\${current.runtime.version}\Debug" />
 		
 		<property name="debug" value="false" />
-		<property name="build.bin" value="${project.bin}\${runtime-name}\${current.runtime.version}\Release" />
-		<call target="build-version" />
-	</target>
-	
-	<target name="build-version" description="Compiles the project DLL">
+		<property name="build.bin" 
+              value="${project.bin}\${runtime-name}\${current.runtime.version}\Release" />
+
 		<csc target="library" 
 			define="${build-version};${use-strong}"
 			output="${build.bin}\${project.name}.dll" debug="${debug}">
@@ -137,10 +148,15 @@
 		</csc>
 	</target>
 
-	<target name="build-vuzitcl" description="Builds the VuzitCL command line app">
+  <!-- Builds the previously specified .NET VuzitCL application -->
+	<target name="build-net-vuzitcl" description="Builds the VuzitCL command line app">
+   <property name="app.bin" value="VuzitCL\Bin\${runtime-name}\${current.runtime.version}\Release" />
+   <mkdir dir="${app.bin}" />
    <copy file="${build.bin}\${project.name}.dll" 
-			   tofile="VuzitCL\Bin\${project.name}.dll" />
-   <csc target="exe" output="VuzitCL\Bin\VuzitCL.exe" debug="false">
+			   tofile="${app.bin}\${project.name}.dll" />
+   <csc target="exe" 
+			  define="${build-version};${use-strong}"
+        output="${app.bin}\VuzitCL.exe" debug="false">
      <sources>
        <include name="VuzitCL\*.cs" />
        <include name="VuzitCL\Properties\*.cs" />
@@ -148,8 +164,28 @@
      <references>
        <include asis="true" name="System.dll"/>
        <include asis="true" name="System.Xml.dll"/>
-       <include name="VuzitCL\Bin\${project.name}.dll"/>
+       <include name="${app.bin}\${project.name}.dll"/>
      </references>
    </csc>
+  </target>
+
+  <!-- Builds the previously specified Mono VuzitCL application -->
+  <target name="build-vuzitcl-mono" description="Builds the VuzitCL Mono command line app">
+    <property name="app.bin" value="VuzitCL\Bin\${runtime-name}\${current.runtime.version}\Release" />
+    <mkdir dir="${app.bin}" />
+    <copy file="${build.bin}\${project.name}.dll" 
+          tofile="${app.bin}\${project.name}.dll" />
+		<exec program="gmcs.bat">
+			<arg value="-target:exe"/>
+			<arg value="-out:${app.bin}\VuzitCL.exe"/>
+			<arg value="-reference:System.dll"/>
+			<arg value="-reference:System.Xml.dll"/>
+			<arg value="-reference:${app.bin}\${project.name}.dll"/>
+			<arg value="-define:${build-version}"/>
+
+			<arg value="VuzitCL\Properties\AssemblyInfo.cs" />
+			<arg value="VuzitCL\Program.cs" />
+			<arg value="VuzitCL\ArgvParser.cs" />
+		</exec>
   </target>
 </project>

@@ -24,8 +24,21 @@ namespace VuzitCL
             }
 
             string[] keys = ((parser["k"] != null) ? parser["k"] : parser["keys"]).Split(',');
+
+            if (keys.Length != 2)
+            {
+                Console.WriteLine("ERROR: Please provide both --key parameters (PUBLIC,PRIVATE)");
+                Console.WriteLine("");
+                PrintUsage();
+            }
             Vuzit.Service.PublicKey = keys[0];
             Vuzit.Service.PrivateKey = keys[1];
+            Vuzit.Service.UserAgent = "VuzitCL .NET 1.0.0";
+            if (parser["s"] != null || parser["service"] != null)
+            {
+               string url = (parser["s"] != null) ? parser["s"] : parser["service-url"];
+               Vuzit.Service.ServiceUrl = url;
+            }
 
             if (parser["h"] != null || parser["help"] != null)
             {
@@ -51,9 +64,6 @@ namespace VuzitCL
                 Console.WriteLine("height: {0}", document.PageHeight);
                 Console.WriteLine("size: {0}", document.FileSize);
             }
-
-            // TODO: Add the -p secure support to this. 
-            // TODO: Add the -s service URL support to this. 
 
             if (parser["u"] != null || parser["upload"] != null)
             {
@@ -93,14 +103,14 @@ namespace VuzitCL
             Console.WriteLine("Usage: vuzitcl -k PUBLIC_KEY,PRIVATE_KEY [OPTIONS]");
             Console.WriteLine("");
             Console.WriteLine("Options:");
-            Console.WriteLine("   -k, --keys=PUB_KEY,PRIV_KEY    Developer API keys - REQUIRED");
-            Console.WriteLine("   -u, --upload=PATH              File to upload");
-            Console.WriteLine("   -p, --public                   Make uploaded file public");
-            Console.WriteLine("   -l, --load=ID                  Loads the document data");
-            Console.WriteLine("   -d, --delete=ID                Deletes a document");
-            Console.WriteLine("   -s, --service-url=URL          Sets the service URL");
-            Console.WriteLine("   -v, --verbose                  Prints more messages");
-            Console.WriteLine("   -h, --help                     Show this message");
+            Console.WriteLine("  -k, --keys=PUB_KEY,PRIV_KEY    Developer API keys - REQUIRED");
+            Console.WriteLine("  -u, --upload=PATH              File to upload");
+            Console.WriteLine("  -p, --public                   Make uploaded file public");
+            Console.WriteLine("  -l, --load=ID                  Loads the document data");
+            Console.WriteLine("  -d, --delete=ID                Deletes a document");
+            Console.WriteLine("  -s, --service-url=URL          Sets the service URL (e.g. http://domain.com)");
+            Console.WriteLine("  -v, --verbose                  Prints more messages");
+            Console.WriteLine("  -h, --help                     Show this message");
         }
     }
 }

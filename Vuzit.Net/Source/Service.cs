@@ -11,9 +11,11 @@ namespace Vuzit
     public sealed class Service
     {
         #region Private static properties
-        private static string serviceUrl = "http://vuzit.com";
-        private static string publicKey = null;
-        private static string privateKey = null;
+        static string serviceUrl = "http://vuzit.com";
+        static string publicKey = null;
+        static string privateKey = null;
+        const string productName = "Vuzit.Net Library 1.0.0";
+        static string userAgent = productName;
         #endregion
 
         #region Public static properties
@@ -66,7 +68,8 @@ namespace Vuzit
         /// </summary>
         public static string UserAgent
         {
-            get { return "Vuzit.Net Library 1.0.0"; }
+            get { return userAgent; }
+            set { userAgent = value + " (" + productName + ")"; }
         }
         #endregion
 
