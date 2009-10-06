@@ -46,9 +46,9 @@ namespace SignatureTest
             Vuzit.Service.PrivateKey = privateKeyText.Text;
 
             // NOTE: The dateTimePicker is currently hard-coded for 10:00 AM.  
-            string sig = Vuzit.Service.GetSignature(methodText.Text, 
-                                                    documentIdText.Text, 
-                                                    dateTimePicker.Value);
+            string sig = Vuzit.Service.Signature(methodText.Text, 
+                                                 documentIdText.Text, 
+                                                 dateTimePicker.Value);
 
             signatureValueLabel.Text = sig;
         }

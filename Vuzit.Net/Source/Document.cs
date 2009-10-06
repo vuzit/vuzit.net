@@ -12,7 +12,7 @@ namespace Vuzit
     /// Class for uploading, loading, and deleting documents using the Vuzit 
     /// Web Service API: http://vuzit.com/developer/documents_api.
     /// </summary>
-    public sealed class Document
+    public sealed class Document : Vuzit.Base
     {
         #region Private static variables
         private string id = null;
@@ -95,13 +95,12 @@ namespace Vuzit
         /// throws a Vuzit_Exception on failure.
         /// </summary>
         /// <param name="documentId">ID of the document to destroy. </param>
-        public static void Destroy(string documentId)
+        public static void Destroy(string webId)
         {
-            Dictionary<string, string> parameters = PostParameters("destroy", documentId);
-            parameters.Add("id", documentId);
+            Dictionary<string, string> parameters = PostParameters("destroy", webId);
 
-            string url = ParametersToUrl(parameters);
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
+            string url = ParametersToUrl("documents", parameters, webId);
+            HttpWebRequest request = WebRequestBuild(url);
             request.UserAgent = Service.UserAgent;
             request.Method = "DELETE";
 
@@ -112,17 +111,17 @@ namespace Vuzit
                 {
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        throw new Vuzit.Exception("HTTP error", response.StatusCode.ToString());
+                        throw new Vuzit.ClientException("HTTP error", response.StatusCode.ToString());
                     }
                 }
             }
-            catch(Vuzit.Exception ex)
+            catch(Vuzit.ClientException ex)
             {
                 throw ex;  // Rethrow because I want to see this exception
             }
             catch(WebException ex)
             {
-                throw new Vuzit.Exception("HTTP response error", ex);
+                throw new Vuzit.ClientException("HTTP response error", ex);
             }
         }
 
@@ -130,15 +129,14 @@ namespace Vuzit
         /// Finds a document by the ID.  It throws a Vuzit.Exception on failure. 
         /// </summary>
         /// <param name="documentId">Id of the document. </param>
-        public static Vuzit.Document FindById(string documentId)
+        public static Vuzit.Document FindById(string webId)
         {
             Vuzit.Document result = new Vuzit.Document();
 
-            Dictionary<string, string> parameters = PostParameters("show", documentId);
-            parameters.Add("id", documentId);
+            Dictionary<string, string> parameters = PostParameters("show", webId);
 
-            string url = ParametersToUrl(parameters);
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
+            string url = ParametersToUrl("documents", parameters, webId);
+            HttpWebRequest request = WebRequestBuild(url);
             request.UserAgent = Service.UserAgent;
             request.Method = "GET";
 
@@ -149,7 +147,7 @@ namespace Vuzit
                 {
                     if (response == null)
                     {
-                        throw new Vuzit.Exception("No XML response from server", 0);
+                        throw new Vuzit.ClientException("No XML response from server", 0);
                     }
 
                     XmlDocument doc = new XmlDocument();
@@ -157,24 +155,24 @@ namespace Vuzit
                     {
                         doc.LoadXml(ReadHttpResponse(response));
                     }
-                    catch (Exception ex)
+                    catch (ClientException ex)
                     {
-                        throw new Vuzit.Exception("Incorrect XML response: " + ex.Message, 0);
+                        throw new Vuzit.ClientException("Incorrect XML response: " + ex.Message, 0);
                     }
 
                     XmlNode node = doc.SelectSingleNode("/err/code");
                     if (node != null)
                     {
                         string msg = doc.SelectSingleNode("/err/msg").InnerText;
-                        throw new Vuzit.Exception("Web service error: " + msg, node.InnerText);
+                        throw new Vuzit.ClientException("Web service error: " + msg, node.InnerText);
                     }
 
-                    result.Id = documentId;
+                    result.Id = webId;
                     node = doc.SelectSingleNode("/document/title");
 
                     if (node == null)
                     {
-                        throw new Vuzit.Exception("No node data in response", 0);
+                        throw new Vuzit.ClientException("No node data in response", 0);
                     }
                     result.Title = node.InnerText;
                     result.Subject = doc.SelectSingleNode("/document/subject").InnerText;
@@ -184,13 +182,13 @@ namespace Vuzit
                     result.FileSize = Convert.ToInt32(doc.SelectSingleNode("/document/file_size").InnerText);
                 }
             }
-            catch(Vuzit.Exception ex)
+            catch(Vuzit.ClientException ex)
             {
                 throw ex;  // Rethrow because I want to see this exception
             }
             catch (WebException ex)
             {
-                throw new Vuzit.Exception("HTTP response error", ex);
+                throw new Vuzit.ClientException("HTTP response error", ex);
             }
 
             return result;
@@ -220,7 +218,7 @@ namespace Vuzit
             }
             parameters.Add("secure", (secure) ? "1" : "0");
 
-            string url = ParametersToUrl(parameters);
+            string url = ParametersToUrl("documents", parameters, null);
             string xml = UploadFile(stream, url, fileName, "upload", null, 
                                     new CookieContainer());
 
@@ -232,14 +230,14 @@ namespace Vuzit
             }
             catch
             {
-                throw new Vuzit.Exception("Incorrect XML response: " + xml, 0);
+                throw new Vuzit.ClientException("Incorrect XML response: " + xml, 0);
             }
 
             XmlNode node = doc.SelectSingleNode("/document/web_id");
 
             if (node == null)
             {
-                throw new Vuzit.Exception("No node data in response", 0);
+                throw new Vuzit.ClientException("No node data in response", 0);
             }
             result.Id = node.InnerText;
 
@@ -275,7 +273,7 @@ namespace Vuzit
 
             if (!File.Exists(path))
             {
-                throw new Vuzit.Exception("Cannot find file at path: " + path, 0);
+                throw new Vuzit.ClientException("Cannot find file at path: " + path, 0);
             }
 
             FileStream fileStream = new FileStream(path, FileMode.Open,
@@ -307,66 +305,6 @@ namespace Vuzit
 
         #region Private static methods
         /// <summary>
-        /// Changes an array (hash table) of parameters to a url.  
-        /// </summary>
-        /// <param name="parameters"></param>
-        static string ParametersToUrl(Dictionary<string, string> parameters)
-        {
-            StringBuilder result = new StringBuilder();
-
-            result.Append(Service.ServiceUrl + "/documents");
-            if(parameters.ContainsKey("id")) {
-                result.Append("/");
-                result.Append(parameters["id"]);
-            }
-            result.Append(".xml?");
-
-            foreach(string key in parameters.Keys)
-            {
-                result.Append(key).Append("=");
-                result.Append(Service.UrlEncode(parameters[key]));
-                result.Append("&");
-            }
-
-            return result.ToString();
-        }
-
-        /// <summary>
-        /// Returns the default HTTP post parameters array.  
-        /// </summary>
-        static Dictionary<string, string> PostParameters(string method, string id)
-        {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-
-            result.Add("method", method);
-            result.Add("key", Service.PublicKey);
-            DateTime date = DateTime.Now;
-            string signature = Service.GetSignature(method, id, date);
-            result.Add("signature", signature);
-            result.Add("timestamp", Service.EpochTime(date).ToString());
-
-            return result;
-        }
-
-        /// <summary>
-        /// Loads a web response into a string.  
-        /// </summary>
-        static string ReadHttpResponse(HttpWebResponse response)
-        {
-            string result = String.Empty;
-
-            using (Stream stream = response.GetResponseStream())
-            {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    result = reader.ReadToEnd();
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Uploads a file by HTTP POST.  Code adapted from this project:
         /// http://www.codeproject.com/KB/cs/uploadfileex.aspx
         /// </summary>
@@ -390,10 +328,8 @@ namespace Vuzit
                 contentType = "application/octet-stream";
             }
 
-            Uri uri = new Uri(url);
-
             string boundary = "----------" + DateTime.Now.Ticks.ToString("x");
-            HttpWebRequest webrequest = (HttpWebRequest)WebRequest.Create(uri);
+            HttpWebRequest webrequest = WebRequestBuild(url);
             webrequest.UserAgent = Service.UserAgent;
             webrequest.CookieContainer = cookies;
             webrequest.ContentType = "multipart/form-data; boundary=" + boundary;
@@ -454,7 +390,7 @@ namespace Vuzit
             }
             catch (WebException ex)
             {
-                throw new Vuzit.Exception("HTTP response error", ex);
+                throw new Vuzit.ClientException("HTTP response error", ex);
             }
 
             Stream s = response.GetResponseStream();

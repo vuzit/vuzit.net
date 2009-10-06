@@ -91,7 +91,7 @@ namespace Vuzit
         /// <param name="service">Name of the service: 'show', 'create', or 'destroy'.</param>
         /// <param name="id">ID of the document.</param>
         /// <param name="date">Date of the request</param>
-        public static string GetSignature(string service, string id, DateTime date)
+        public static string Signature(string service, string id, DateTime date)
         {
             string result = null;
 
@@ -126,9 +126,9 @@ namespace Vuzit
         /// </summary>
         /// <param name="service">Name of the service: 'show', 'create', or 'destroy'.</param>
         /// <param name="date">Date of the request</param>
-        public static string GetSignature(string service, DateTime date)
+        public static string Signature(string service, DateTime date)
         {
-            return GetSignature(service, null, date);
+            return Signature(service, null, date);
         }
 
         /// <summary>
@@ -136,9 +136,9 @@ namespace Vuzit
         /// </summary>
         /// <param name="service">Name of the service: 'show', 'create', or 'destroy'.</param>
         /// <param name="id">ID of the document.</param>
-        public static string GetSignature(string service, string id)
+        public static string Signature(string service, string id)
         {
-            return GetSignature(service, id, DateTime.MinValue);
+            return Signature(service, id, DateTime.MinValue);
         }
 
         /// <summary>

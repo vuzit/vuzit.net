@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
@@ -9,7 +9,7 @@ namespace Vuzit
     /// <summary>
     /// Vuzit library exception handler class.  
     /// </summary>
-    public class Exception : System.Exception
+    public class ClientException : System.Exception
     {
         #region Public properties
         /// <summary>
@@ -40,7 +40,7 @@ namespace Vuzit
         /// </summary>
         /// <param name="message"></param>
         /// <param name="ex">The WebException returned. </param>
-        public Exception(string message, WebException ex)
+        public ClientException(string message, WebException ex)
         {
             string response = null;
             Stream errorStream = ex.Response.GetResponseStream();
@@ -60,7 +60,7 @@ namespace Vuzit
         /// </summary>
         /// <param name="message">Error message. </param>
         /// <param name="code">Error code. </param>
-        public Exception(string message, int code)
+        public ClientException(string message, int code)
         {
             this.message = message;
             this.code = code;
@@ -71,7 +71,7 @@ namespace Vuzit
         /// </summary>
         /// <param name="message">Error message. </param>
         /// <param name="code">Error code. </param>
-        public Exception(string message, string code)
+        public ClientException(string message, string code)
         {
             this.message = message;
             this.code = Convert.ToInt32(code);

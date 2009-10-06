@@ -100,19 +100,19 @@ Upload and View with the JavaScript API Example
   string timestamp = Vuzit.Service.EpochTime(date).ToString();
 
   // Upload "signature" parameter
-  string signature = Vuzit.Service.GetSignature("show", documentId, date);
+  string signature = Vuzit.Service.Signature("show", documentId, date);
 
   // Creates a URL-encoded signature
   string encodedSig = Vuzit.Service.UrlEncode(signature);
   %>
   <html>
     <head>
-      <link href="http://vuzit.com/stylesheets/Vuzit-2.6.css" rel="Stylesheet" type="text/css" />
-      <script src="http://vuzit.com/javascripts/Vuzit-2.6.js" type="text/javascript"></script>
+      <link href="http://vuzit.com/stylesheets/Vuzit-2.8.css" rel="Stylesheet" type="text/css" />
+      <script src="http://vuzit.com/javascripts/Vuzit-2.8.js" type="text/javascript"></script>
       <script type="text/javascript">
         // Called when the page is loaded.  
         function initialize()  {
-          vuzit.Base.PublicKeySet("<%= Vuzit.Service.PublicKey %>"); 
+          vuzit.Base.apiKeySet("<%= Vuzit.Service.PublicKey %>"); 
           var options = {signature: '<%= encodedSig %>', 
                          timestamp: '<%= timestamp %>', ssl: true}
           var viewer = vuzit.Viewer.fromId("<%= documentId %>", options);

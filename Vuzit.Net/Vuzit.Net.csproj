@@ -46,8 +46,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Source\Base.cs" />
+    <Compile Include="Source\ClientException.cs" />
     <Compile Include="Source\Document.cs" />
-    <Compile Include="Source\Exception.cs" />
     <Compile Include="Source\Service.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

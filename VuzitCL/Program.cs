@@ -84,7 +84,7 @@ namespace VuzitCL
             {
                 Execute(args);
             }
-            catch (Vuzit.Exception ex)
+            catch (Vuzit.ClientException ex)
             {
                 Console.WriteLine("Web service error [{0}]: {1}", ex.Code, ex.Message);
             }
