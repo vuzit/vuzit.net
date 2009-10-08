@@ -32,26 +32,26 @@ private keys with the keys from your account.
 
 * Take the DLL for your .NET Framework version out of the Bin directory 
 
-  * Vuzit.Net\Bin\DotNet\2.0 - DLL built with the MS .NET Framework 2.0
+  * Bin\Vuzit.Net\DotNet\2.0\Release - DLL built with the MS .NET Framework 2.0
 
-  * Vuzit.Net\Bin\DotNet\3.5 - DLL built with the MS .NET Framework 3.5
+  * Bin\Vuzit.Net\DotNet\3.5\Release - DLL built with the MS .NET Framework 3.5
 
-  * Vuzit.Net\Bin\Mono\2.2 - DLL built with the Mono 2.2 Framework
+  * Bin\Vuzit.Net\Mono\2.2\Release - DLL built with the Mono 2.2 Framework
   
 * Add the DLL as a reference in your project.  In Visual Studio right-click on 
   the References item in the project menu, click on the Browse button and 
-  select Vuzit.Net.dll.
+  select "Vuzit.Net.dll".
   
 * You can also add Vuzit.Net to all projects on your machine by adding it to the
   global assembly cache.  To do this run the following command:
+
   $> gacutil.exe /i Vuzit.Net.dll
 
 * To check if your install was successful add the following to a .NET project 
-  file (this assumes C#, use the appropriate version for C++/VB.NET, etc):
+  file (this assumes C#, use the appropriate version for C++/VB.NET, etc) and
+  if it compiles without errors then you have succeeded:
 
   using Vuzit.Net;
-
-  If it compiles without any errors then you've succeeded.
 
 
 --------------------------------------------------
@@ -60,8 +60,9 @@ private keys with the keys from your account.
 
 * Download the code - http://github.com/vuzit/vuzit.net/downloads
 * Sign up for a free Vuzit account - https://ssl.vuzit.com/signup
-* Code Examples - http://wiki.github.com/vuzit/vuzit.net/code-samples
-* Vuzit API Reference - http://wiki.github.com/vuzit/vuzit.net/api-reference
+* Code Examples - http://wiki.github.com/vuzit/vuzit.net/code_examples
+* Vuzit API Reference - http://wiki.github.com/vuzit/vuzit.net/api_reference
+* Change log - http://wiki.github.com/vuzit/vuzit.net/change_log
 
 
 --------------------------------------------------

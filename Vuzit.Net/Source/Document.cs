@@ -208,7 +208,7 @@ namespace Vuzit
 
             if (fileName == null)
             {
-                fileName = "document." + fileType;
+                fileName = "document";
             }
 
             Dictionary<string, string> parameters = PostParameters("create", null);
@@ -318,12 +318,12 @@ namespace Vuzit
                                          string fileFormName, string contentType,
                                          CookieContainer cookies)
         {
-            if ((fileFormName == null) || (fileFormName.Length == 0))
+            if(fileFormName == null)
             {
                 fileFormName = "file";
             }
 
-            if ((contentType == null) || (contentType.Length == 0))
+            if(contentType == null)
             {
                 contentType = "application/octet-stream";
             }

@@ -14,7 +14,7 @@ namespace Vuzit
         static string serviceUrl = "http://vuzit.com";
         static string publicKey = null;
         static string privateKey = null;
-        const string productName = "Vuzit.Net Library 1.0.0";
+        const string productName = "Vuzit.Net Library 1.1.0";
         static string userAgent = productName;
         #endregion
 

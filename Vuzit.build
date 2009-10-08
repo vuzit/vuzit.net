@@ -8,7 +8,7 @@
 	<description>Vuzit.Net project build script</description>
 	<property name="debug" value="false" />
 	<property name="project.name" value="Vuzit.Net"/>
-	<property name="project.bin" value="Vuzit.Net\Bin"/>
+	<property name="project.bin" value="Bin"/>
 	<property name="project.src" value="Vuzit.Net"/>
 	<property name="project.doc" value="Vuzit.Net\Doc"/>
 	<property name="lang" value="en"/>
@@ -19,7 +19,7 @@
 		<delete dir="${project.bin}\DotNet" failonerror="false" />
 		<delete dir="${project.bin}\Mono" failonerror="false" />
 		<delete dir="${project.bin}" failonerror="false" />
-		<delete dir="VuzitCL\Bin" failonerror="false" />
+		<delete dir="${project.bin}\VuzitCL" failonerror="false" />
 	</target>
 	
   <!-- Cleans the documentation build -->
@@ -48,7 +48,7 @@
     <!-- Some version of .NET must be installed first. -->
     <call target="build-dotnet-3.5" />
 		<ndoc>
-			<assemblies basedir="${build.bin}">
+			<assemblies basedir="${build.bin}\Vuzit.Net">
 				<include name="Vuzit.Net.dll" />
 			</assemblies>
       <summaries basedir="${project.src}">
@@ -100,8 +100,8 @@
 	
   <!-- Builds the previously specified Mono build -->
 	<target name="run-mono-build">
-		<mkdir dir="${project.bin}\Mono\${current.runtime.version}\Release" />
-		<property name="build.bin" value="${project.bin}\Mono\${current.runtime.version}\Release" />
+		<mkdir dir="${project.bin}\Vuzit.Net\Mono\${current.runtime.version}\Release" />
+		<property name="build.bin" value="${project.bin}\Vuzit.Net\Mono\${current.runtime.version}\Release" />
 
 		<exec program="gmcs.bat">
 			<arg value="-target:library"/>
@@ -113,8 +113,9 @@
 			<arg value="-define:${use-strong}"/>
 
 			<arg value="${project.src}\Properties\AssemblyInfo.cs" />
+			<arg value="${project.src}\Source\Base.cs" />
 			<arg value="${project.src}\Source\Document.cs" />
-			<arg value="${project.src}\Source\Exception.cs" />
+			<arg value="${project.src}\Source\ClientException.cs" />
 			<arg value="${project.src}\Source\Service.cs" />
 		</exec>
 	</target>
@@ -123,15 +124,15 @@
 	<target name="run-net-build">
     <property name="nant.settings.currentframework" 
               value="${current.runtime.config}-${current.runtime.version}" />
-		<mkdir dir="${project.bin}\${runtime-name}\${current.runtime.version}\Release" />
+		<mkdir dir="${project.bin}\Vuzit.Net\${runtime-name}\${current.runtime.version}\Release" />
 
 		<property name="debug" value="true" />
 		<property name="build.bin" 
-              value="${project.bin}\${runtime-name}\${current.runtime.version}\Debug" />
+              value="${project.bin}\Vuzit.Net\${runtime-name}\${current.runtime.version}\Debug" />
 		
 		<property name="debug" value="false" />
 		<property name="build.bin" 
-              value="${project.bin}\${runtime-name}\${current.runtime.version}\Release" />
+              value="${project.bin}\Vuzit.Net\${runtime-name}\${current.runtime.version}\Release" />
 
 		<csc target="library" 
 			define="${build-version};${use-strong}"
@@ -150,7 +151,7 @@
 
   <!-- Builds the previously specified .NET VuzitCL application -->
 	<target name="build-net-vuzitcl" description="Builds the VuzitCL command line app">
-   <property name="app.bin" value="VuzitCL\Bin\${runtime-name}\${current.runtime.version}\Release" />
+   <property name="app.bin" value="Bin\VuzitCL\${runtime-name}\${current.runtime.version}\Release" />
    <mkdir dir="${app.bin}" />
    <copy file="${build.bin}\${project.name}.dll" 
 			   tofile="${app.bin}\${project.name}.dll" />
@@ -171,7 +172,7 @@
 
   <!-- Builds the previously specified Mono VuzitCL application -->
   <target name="build-vuzitcl-mono" description="Builds the VuzitCL Mono command line app">
-    <property name="app.bin" value="VuzitCL\Bin\${runtime-name}\${current.runtime.version}\Release" />
+    <property name="app.bin" value="Bin\VuzitCL\${runtime-name}\${current.runtime.version}\Release" />
     <mkdir dir="${app.bin}" />
     <copy file="${build.bin}\${project.name}.dll" 
           tofile="${app.bin}\${project.name}.dll" />

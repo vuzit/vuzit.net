@@ -16,6 +16,7 @@ namespace VuzitCL
         static void Execute(string[] args)
         {
             ArgvParser parser = new ArgvParser(args);
+            bool isPublic = false;
 
             if (parser["k"] == null && parser["keys"] == null)
             {
@@ -33,11 +34,16 @@ namespace VuzitCL
             }
             Vuzit.Service.PublicKey = keys[0];
             Vuzit.Service.PrivateKey = keys[1];
-            Vuzit.Service.UserAgent = "VuzitCL .NET 1.0.0";
+            Vuzit.Service.UserAgent = "VuzitCL .NET 1.1.0";
             if (parser["s"] != null || parser["service"] != null)
             {
                string url = (parser["s"] != null) ? parser["s"] : parser["service-url"];
                Vuzit.Service.ServiceUrl = url;
+            }
+
+            if (parser["p"] != null || parser["public"] != null)
+            {
+                isPublic = true;
             }
 
             if (parser["h"] != null || parser["help"] != null)
@@ -68,8 +74,8 @@ namespace VuzitCL
             if (parser["u"] != null || parser["upload"] != null)
             {
                 string path = (parser["u"] != null) ? parser["u"] : parser["upload"];
-                // TODO: Add the -p secure support to this. 
-                Vuzit.Document document = Vuzit.Document.Upload(path, true);
+                // "secure" is the opposite of isPublic
+                Vuzit.Document document = Vuzit.Document.Upload(path, !isPublic);
                 Console.WriteLine("UPLOADED: {0}", document.Id);
             }
         }
@@ -86,11 +92,11 @@ namespace VuzitCL
             }
             catch (Vuzit.ClientException ex)
             {
-                Console.WriteLine("Web service error [{0}]: {1}", ex.Code, ex.Message);
+                Console.WriteLine("WEB ERROR: [{0}] {1}", ex.Code, ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Unknown error: {0}", ex.Message);
+                Console.WriteLine("ERROR: {0}", ex.Message);
             }
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.IO;
+using System.Xml;
 
 namespace Vuzit
 {
@@ -42,17 +43,34 @@ namespace Vuzit
         /// <param name="ex">The WebException returned. </param>
         public ClientException(string message, WebException ex)
         {
-            string response = null;
-            Stream errorStream = ex.Response.GetResponseStream();
-            StreamReader errorReader = new StreamReader(errorStream);
-            response = errorReader.ReadToEnd();
-            errorStream.Close();
+            HttpWebResponse response = (HttpWebResponse)ex.Response;
 
-            // TODO: Have it parse out the error code and message
-            //       from the "/err/code" and "/err/msg" nodes
+            XmlDocument doc = new XmlDocument();
+            try
+            {
+                doc.LoadXml(Base.ReadHttpResponse(response));
 
-            this.message = message + ", Response: " + response;
-            this.code = 0;
+                XmlNode node = doc.SelectSingleNode("/err/code");
+                if (node != null)
+                {
+                    string code = doc.SelectSingleNode("/err/code").InnerText;
+                    string msg = doc.SelectSingleNode("/err/msg").InnerText;
+
+                    this.code = Convert.ToInt32(code);
+                    this.message = msg;
+                }
+            }
+            catch
+            {
+                // There was invalid XML so default to the base error
+                Stream errorStream = ex.Response.GetResponseStream();
+                StreamReader errorReader = new StreamReader(errorStream);
+                string responseText = errorReader.ReadToEnd();
+                errorStream.Close();
+
+                this.message = responseText;
+                this.code = 0;
+            }
         }
 
         /// <summary>

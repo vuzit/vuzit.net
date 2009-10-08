@@ -13,6 +13,27 @@ namespace Vuzit
     /// </summary>
     public abstract class Base
     {
+        #region Public static methods
+        /// <summary>
+        /// Loads a web response into a string.  
+        /// </summary>
+        public static string ReadHttpResponse(HttpWebResponse response)
+        {
+            string result = String.Empty;
+
+            using (Stream stream = response.GetResponseStream())
+            {
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    result = reader.ReadToEnd();
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region Protected static methods
         /// <summary>
         /// Changes an array (hash table) of parameters to a url.  
         /// </summary>
@@ -62,24 +83,6 @@ namespace Vuzit
         }
 
         /// <summary>
-        /// Loads a web response into a string.  
-        /// </summary>
-        protected static string ReadHttpResponse(HttpWebResponse response)
-        {
-            string result = String.Empty;
-
-            using (Stream stream = response.GetResponseStream())
-            {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    result = reader.ReadToEnd();
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Returns a web request.  
         /// </summary>
         protected static HttpWebRequest WebRequestBuild(string url)
@@ -102,5 +105,6 @@ namespace Vuzit
 
             return result;
         }
+        #endregion
     }
 }
