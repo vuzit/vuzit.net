@@ -20,6 +20,7 @@ namespace Vuzit
         private int pageCount = -1;
         private int pageWidth = -1;
         private int pageHeight = -1;
+        private int status = -1;
         private string subject = null;
         private string title = null;
         #endregion
@@ -63,6 +64,14 @@ namespace Vuzit
         public int PageHeight
         {
             get { return pageHeight; }
+        }
+
+        /// <summary>
+        /// The status of the document.  
+        /// </summary>
+        public int Status
+        {
+            get { return status; }
         }
 
         /// <summary>
@@ -173,6 +182,7 @@ namespace Vuzit
                     result.pageWidth = Convert.ToInt32(doc.SelectSingleNode("/document/width").InnerText);
                     result.pageHeight = Convert.ToInt32(doc.SelectSingleNode("/document/height").InnerText);
                     result.fileSize = Convert.ToInt32(doc.SelectSingleNode("/document/file_size").InnerText);
+                    result.status = Convert.ToInt32(doc.SelectSingleNode("/document/status").InnerText);
                 }
             }
             catch(Vuzit.ClientException ex)

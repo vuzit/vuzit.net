@@ -60,7 +60,15 @@ namespace Vuzit
         public static string ServiceUrl
         {
             get { return serviceUrl; }
-            set { serviceUrl = value; }
+            set
+            {
+                string url = value.Trim();
+                if (url.EndsWith("/"))
+                {
+                    throw new ArgumentException("Trailing slashes (/) in service URLs are invalid");
+                }
+                serviceUrl = url;
+            }
         }
 
         /// <summary>

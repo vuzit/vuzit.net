@@ -127,6 +127,7 @@ namespace VuzitCL
             Console.WriteLine("width: {0}", document.PageWidth);
             Console.WriteLine("height: {0}", document.PageHeight);
             Console.WriteLine("size: {0}", document.FileSize);
+            Console.WriteLine("status: {0}", document.Status);
         }
 
         /// <summary>
@@ -199,7 +200,7 @@ namespace VuzitCL
         {
             if (parser["k"] == null && parser["keys"] == null)
             {
-                Console.WriteLine("Must provide parameters");
+                Console.WriteLine("Must provide the --key parameter");
                 return false;
             }
 
