@@ -111,6 +111,13 @@ namespace Vuzit
             webrequest.ContentType = "multipart/form-data; boundary=" + boundary;
             webrequest.Method = "POST";
 
+            // If the stream is over 3 megabytes in size
+            if (fileStream.Length > (3 * 1048576))
+            {
+                // Set the timeout to 5 minutes
+                webrequest.Timeout = (5 * 60 * 1000);
+            }
+
             // Build up the post message header
             StringBuilder sb = new StringBuilder();
             sb.Append("--");
