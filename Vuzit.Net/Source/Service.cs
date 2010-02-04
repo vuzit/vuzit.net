@@ -96,10 +96,11 @@ namespace Vuzit
         /// <summary>
         /// Returns the signature string.  
         /// </summary>
-        /// <param name="service">Name of the service: 'show', 'create', or 'destroy'.</param>
+        /// <param name="service">Service name (e.g. 'show').</param>
         /// <param name="id">ID of the document.</param>
         /// <param name="date">Date of the request</param>
-        public static string Signature(string service, string id, DateTime date)
+        public static string Signature(string service, string id, 
+                                       DateTime date, OptionList options)
         {
             string result = null;
 
@@ -123,7 +124,23 @@ namespace Vuzit
                 id = String.Empty;
             }
 
+            // TODO: Make msg a StringBuilder
             string msg = (service + id + PublicKey + EpochTime(date).ToString());
+
+            if (options != null)
+            {
+                string[] optionsList = new string[] { "included_pages", 
+                                                      "watermark", 
+                                                      "query" };
+                foreach (string item in optionsList)
+                {
+                    if (options.Contains(item))
+                    {
+                        msg += options[item];
+                    }
+                }
+            }
+
             result = CalculateRFC2104HMAC(msg, PrivateKey);
 
             return result;
@@ -136,7 +153,7 @@ namespace Vuzit
         /// <param name="date">Date of the request</param>
         public static string Signature(string service, DateTime date)
         {
-            return Signature(service, null, date);
+            return Signature(service, null, date, null);
         }
 
         /// <summary>
@@ -146,7 +163,7 @@ namespace Vuzit
         /// <param name="id">ID of the document.</param>
         public static string Signature(string service, string id)
         {
-            return Signature(service, id, DateTime.MinValue);
+            return Signature(service, id, DateTime.MinValue, null);
         }
 
         /// <summary>

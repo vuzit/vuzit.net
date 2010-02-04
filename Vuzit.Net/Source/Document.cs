@@ -23,6 +23,7 @@ namespace Vuzit
         private int status = -1;
         private string subject = null;
         private string title = null;
+        private string excerpt = null;
         #endregion
 
         #region Public properties
@@ -32,6 +33,14 @@ namespace Vuzit
         public string Id
         {
             get { return id; }
+        }
+
+        /// <summary>
+        /// A short excerpt from a document.  
+        /// </summary>
+        public string Excerpt
+        {
+            get { return excerpt; }
         }
 
         /// <summary>
@@ -128,14 +137,41 @@ namespace Vuzit
         }
 
         /// <summary>
+        /// Returns a download URL.  
+        /// </summary>
+        public static string DownloadUrl(string webId, string fileExtension)
+        {
+            OptionList parameters = PostParameters(new OptionList(), "show", webId);
+            string result = ParametersToUrl("documents", parameters, webId, fileExtension);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Finds a document by the ID.  Deprecated.  
+        /// </summary>
+        public static Vuzit.Document FindById(string webId)
+        {
+            return Find(webId);
+        }
+
+        /// <summary>
+        /// Returns the documents but without any options.  
+        /// </summary>
+        public static Vuzit.Document Find(string webId)
+        {
+            return Find(webId, new OptionList());
+        }
+
+        /// <summary>
         /// Finds a document by the ID.  It throws a Vuzit.Exception on failure. 
         /// </summary>
         /// <param name="documentId">Id of the document. </param>
-        public static Vuzit.Document FindById(string webId)
+        public static Vuzit.Document Find(string webId, OptionList options)
         {
-            Vuzit.Document result = new Vuzit.Document();
+            Vuzit.Document result = null;
 
-            OptionList parameters = PostParameters(new OptionList(), "show", webId);
+            OptionList parameters = PostParameters(options, "show", webId);
 
             string url = ParametersToUrl("documents", parameters, webId);
             HttpWebRequest request = WebRequestBuild(url);
@@ -169,20 +205,14 @@ namespace Vuzit
                         throw new Vuzit.ClientException("Web service error: " + msg, node.InnerText);
                     }
 
-                    result.id = webId;
-                    node = doc.SelectSingleNode("/document/title");
-
-                    if (node == null)
+                    XmlNode docNode = doc.SelectSingleNode("document");
+                    if (docNode == null)
                     {
-                        throw new Vuzit.ClientException("No node data in response", 0);
+                        throw new Vuzit.ClientException("No document found by that ID", 0);
                     }
-                    result.title = node.InnerText;
-                    result.subject = doc.SelectSingleNode("/document/subject").InnerText;
-                    result.pageCount = Convert.ToInt32(doc.SelectSingleNode("/document/page_count").InnerText);
-                    result.pageWidth = Convert.ToInt32(doc.SelectSingleNode("/document/width").InnerText);
-                    result.pageHeight = Convert.ToInt32(doc.SelectSingleNode("/document/height").InnerText);
-                    result.fileSize = Convert.ToInt32(doc.SelectSingleNode("/document/file_size").InnerText);
-                    result.status = Convert.ToInt32(doc.SelectSingleNode("/document/status").InnerText);
+
+                    result = NodeToDocument(docNode);
+                    result.id = webId;
                 }
             }
             catch(Vuzit.ClientException ex)
@@ -195,6 +225,68 @@ namespace Vuzit
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Finds all documents matching the given criteria.  
+        /// </summary>
+        public static Vuzit.Document[] FindAll(OptionList options)
+        {
+            List<Vuzit.Document> result = new List<Vuzit.Document>();
+
+            OptionList parameters = PostParameters(options, "index", null);
+            parameters.Add("output", "summary");
+
+            string url = ParametersToUrl("documents", parameters, null);
+            HttpWebRequest request = WebRequestBuild(url);
+            request.UserAgent = Service.UserAgent;
+            request.Method = "GET";
+
+            // Catch 403, etc forbidden errors
+            try
+            {
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    if (response == null)
+                    {
+                        throw new Vuzit.ClientException("No XML response from server", 0);
+                    }
+
+                    XmlDocument doc = new XmlDocument();
+                    try
+                    {
+                        doc.LoadXml(ReadHttpResponse(response));
+                    }
+                    catch (ClientException ex)
+                    {
+                        throw new Vuzit.ClientException("Incorrect XML response: " + ex.Message, 0);
+                    }
+
+                    XmlNode node = doc.SelectSingleNode("/err/code");
+                    if (node != null)
+                    {
+                        string msg = doc.SelectSingleNode("/err/msg").InnerText;
+                        throw new Vuzit.ClientException("Web service error: " + msg, node.InnerText);
+                    }
+
+                    XmlNodeList list = doc.SelectNodes("/documents/document");
+
+                    foreach (XmlNode childNode in list)
+                    {
+                        result.Add(NodeToDocument(childNode));
+                    }
+                }
+            }
+            catch (Vuzit.ClientException ex)
+            {
+                throw ex;  // Rethrow because I want to see this exception
+            }
+            catch (WebException ex)
+            {
+                throw new Vuzit.ClientException("HTTP response error", ex);
+            }
+
+            return result.ToArray();
         }
 
         /// <summary>
@@ -320,6 +412,30 @@ namespace Vuzit
         #endregion
 
         #region Private static methods
+        /// <summary>
+        /// Converts an XML node to a Vuzit document.  
+        /// </summary>
+        private static Vuzit.Document NodeToDocument(XmlNode rootNode)
+        {
+            Vuzit.Document result = new Vuzit.Document();
+            XmlNode node = rootNode.SelectSingleNode("title");
+
+            if (node == null)
+            {
+                throw new Vuzit.ClientException("No node data in response", 0);
+            }
+            result.title = node.InnerText;
+            result.id = NodeValue(rootNode, "web_id");
+            result.subject = NodeValue(rootNode, "subject");
+            result.pageCount = NodeValueInt(rootNode, "page_count");
+            result.pageWidth = NodeValueInt(rootNode, "width");
+            result.pageHeight = NodeValueInt(rootNode, "height");
+            result.fileSize = NodeValueInt(rootNode, "file_size");
+            result.status = NodeValueInt(rootNode, "status");
+            result.excerpt = NodeValue(rootNode, "excerpt");
+
+            return result;
+        }
         #endregion
     }
 }

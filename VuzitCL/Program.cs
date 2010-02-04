@@ -37,6 +37,9 @@ namespace VuzitCL
                 case "help":
                     HelpCommand(args);
                     break;
+                case "search":
+                    SearchCommand(args);
+                    break;
                 default:
                     Console.WriteLine("Incorrect option: " + args[0]);
                     break;
@@ -99,6 +102,9 @@ namespace VuzitCL
                 case "delete":
                     PrintUsageDelete();
                     break;
+                case "search":
+                    PrintUsageSearch();
+                    break;
                 default:
                     Console.WriteLine("Unknown option: " + LastOption(args));
                     break;
@@ -119,7 +125,7 @@ namespace VuzitCL
                 return;
             }
             
-            Vuzit.Document document = Vuzit.Document.FindById(id);
+            Vuzit.Document document = Vuzit.Document.Find(id);
             Console.WriteLine("LOADED: {0}", document.Id);
             Console.WriteLine("title: {0}", document.Title);
             Console.WriteLine("subject: {0}", document.Subject);
@@ -128,6 +134,52 @@ namespace VuzitCL
             Console.WriteLine("height: {0}", document.PageHeight);
             Console.WriteLine("size: {0}", document.FileSize);
             Console.WriteLine("status: {0}", document.Status);
+
+            Console.WriteLine("Download URL: {0}", Vuzit.Document.DownloadUrl(id, "pdf"));
+        }
+
+        /// <summary>
+        /// Executes the search sub-command.  
+        /// </summary>
+        static void SearchCommand(string[] args)
+        {
+            string id = LastOption(args);
+            string[] options = CleanArgs(args);
+            ArgvParser parser = new ArgvParser(options);
+
+            if (!GlobalParametersLoad(parser))
+            {
+                return;
+            }
+
+            Vuzit.OptionList list = new Vuzit.OptionList();
+            if (parser.GetArg("q", "query") != null)
+            {
+                list.Add("query", parser.GetArg("q", "query"));
+            }
+
+            Vuzit.Document[] documents = Vuzit.Document.FindAll(list);
+
+            int i = 1;
+            Console.WriteLine("{0} documents found", documents.Length);
+            Console.WriteLine("");
+
+            foreach (Vuzit.Document document in documents)
+            {
+                Console.WriteLine("LOADED [{0}]: {1}", i, document.Id);
+                Console.WriteLine("title: {0}", document.Title);
+                Console.WriteLine("subject: {0}", document.Subject);
+                Console.WriteLine("pages: {0}", document.PageCount);
+                Console.WriteLine("width: {0}", document.PageWidth);
+                Console.WriteLine("height: {0}", document.PageHeight);
+                Console.WriteLine("size: {0}", document.FileSize);
+                Console.WriteLine("status: {0}", document.Status);
+                Console.WriteLine("excerpt: {0}", document.Excerpt);
+
+                Console.WriteLine("Download URL: {0}", 
+                               Vuzit.Document.DownloadUrl(document.Id, "pdf"));
+                i++;
+            }
         }
 
         /// <summary>
@@ -257,13 +309,14 @@ namespace VuzitCL
             Console.WriteLine("VuzitCL - Vuzit Command Line");
             Console.WriteLine("Usage: vuzitcl -k PUBLIC_KEY,PRIVATE_KEY [OPTIONS]");
             Console.WriteLine("");
-            Console.WriteLine("Type 'vuzitcl --help <subcommand>' for help on a specific subcommand.");
+            Console.WriteLine("Type 'vuzitcl help <subcommand>' for help on a specific subcommand.");
             Console.WriteLine("");
             Console.WriteLine("Available sub-commands:");
             Console.WriteLine("");
-            Console.WriteLine("  upload");
             Console.WriteLine("  delete");
             Console.WriteLine("  load");
+            Console.WriteLine("  search");
+            Console.WriteLine("  upload");
             Console.WriteLine("  help");
         }
 
@@ -287,6 +340,22 @@ namespace VuzitCL
             Console.WriteLine("");
             Console.WriteLine("Valid options:");
             Console.WriteLine("  none");
+            Console.WriteLine("");
+            PrintUsageGlobal();
+        }
+
+        /// <summary>
+        /// Prints the search sub-command usage options.  
+        /// </summary>
+        static void PrintUsageSearch()
+        {
+            Console.WriteLine("search: Upload a file to Vuzit.");
+            Console.WriteLine("usage: search [OPTIONS]");
+            Console.WriteLine("");
+            Console.WriteLine("Valid options:");
+            Console.WriteLine("  -q, --query         Query keywords");
+            Console.WriteLine("  -l, --limit         Limits the results to a number");
+            Console.WriteLine("  -o, --offset        Offsets the results at this number");
             Console.WriteLine("");
             PrintUsageGlobal();
         }

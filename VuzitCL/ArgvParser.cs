@@ -62,8 +62,30 @@ namespace VuzitCL
 		}
 		#endregion
 
-		#region Private methods
-		// Extract command line parameters and values stored in a string array
+        #region Public methods
+        /// <summary>
+        /// Returns the data for an argument.  
+        /// </summary>
+        public string GetArg(string argument1, string argument2)
+        {
+            string result = null;
+
+            if (this[argument1] != null)
+            {
+                result = this[argument1];
+            }
+
+            if (result == null && this[argument2] != null)
+            {
+                result = this[argument2];
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region Private methods
+        // Extract command line parameters and values stored in a string array
 		private void Extract(string[] args)
 		{
 			parameters = new StringDictionary();

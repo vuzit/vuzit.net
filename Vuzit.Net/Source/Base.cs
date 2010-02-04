@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Xml;
 using System.Net;
 using System.Net.Security;
 using System.Collections.Generic;
@@ -35,11 +36,47 @@ namespace Vuzit
 
         #region Protected static methods
         /// <summary>
+        /// Returns the value of a child node.  
+        /// </summary>
+        protected static string NodeValue(XmlNode node, string key)
+        {
+            string result = null;
+            XmlNode childNode = node.SelectSingleNode(key);
+            if (childNode != null)
+            {
+                result = childNode.InnerText;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the integer value of a child node or -1 if none.  
+        /// </summary>
+        protected static int NodeValueInt(XmlNode node, string key)
+        {
+            string text = NodeValue(node, key);
+
+            return (text == null) ? -1 : Convert.ToInt32(text);
+        }
+
+        /// <summary>
+        /// Returns a URL but defaults the extension to 'xml'.  
+        /// </summary>
+        protected static string ParametersToUrl(string resource,
+                                                OptionList parameters,
+                                                string webId)
+        {
+            return ParametersToUrl(resource, parameters, webId, "xml");
+        }
+
+        /// <summary>
         /// Changes an array (hash table) of parameters to a url.  
         /// </summary>
         protected static string ParametersToUrl(string resource, 
                                                 OptionList parameters, 
-                                                string webId)
+                                                string webId,
+                                                string extension)
         {
             StringBuilder result = new StringBuilder();
 
@@ -48,7 +85,7 @@ namespace Vuzit
             {
                 result.Append("/").Append(webId);
             }
-            result.Append(".xml?");
+            result.Append(".").Append(extension).Append("?");
 
             foreach (string key in parameters.Keys)
             {
@@ -73,7 +110,7 @@ namespace Vuzit
             options.Add("method", method);
             options.Add("key", Service.PublicKey);
             DateTime date = DateTime.Now;
-            string signature = Service.Signature(method, id, date);
+            string signature = Service.Signature(method, id, date, options);
             options.Add("signature", signature);
             options.Add("timestamp", Service.EpochTime(date).ToString());
 
