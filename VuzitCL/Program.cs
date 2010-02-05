@@ -157,6 +157,14 @@ namespace VuzitCL
             {
                 list.Add("query", parser.GetArg("q", "query"));
             }
+            if (parser.GetArg("l", "limit") != null)
+            {
+                list.Add("limit", parser.GetArg("l", "limit"));
+            }
+            if (parser.GetArg("o", "offset") != null)
+            {
+                list.Add("offset", parser.GetArg("o", "offset"));
+            }
 
             Vuzit.Document[] documents = Vuzit.Document.FindAll(list);
 
@@ -178,6 +186,7 @@ namespace VuzitCL
 
                 Console.WriteLine("Download URL: {0}", 
                                Vuzit.Document.DownloadUrl(document.Id, "pdf"));
+                Console.WriteLine("");
                 i++;
             }
         }
@@ -250,13 +259,14 @@ namespace VuzitCL
         /// <returns></returns>
         static bool GlobalParametersLoad(ArgvParser parser)
         {
-            if (parser["k"] == null && parser["keys"] == null)
+            string key = parser.GetArg("k", "keys");
+            if (key == null)
             {
                 Console.WriteLine("Must provide the --key parameter");
                 return false;
             }
 
-            string[] keys = ((parser["k"] != null) ? parser["k"] : parser["keys"]).Split(',');
+            string[] keys = key.Split(',');
 
             if (keys.Length != 2)
             {
@@ -268,10 +278,9 @@ namespace VuzitCL
             Vuzit.Service.PrivateKey = keys[1];
             Vuzit.Service.UserAgent = "VuzitCL .NET 1.1.0";
 
-            if (parser["u"] != null || parser["service-url"] != null)
+            if(parser.GetArg("u", "service-url") != null)
             {
-                string url = (parser["u"] != null) ? parser["u"] : parser["service-url"];
-                Vuzit.Service.ServiceUrl = url;
+                Vuzit.Service.ServiceUrl = parser.GetArg("u", "service-url");
             }
 
             return true;

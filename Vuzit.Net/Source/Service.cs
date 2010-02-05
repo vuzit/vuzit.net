@@ -102,7 +102,7 @@ namespace Vuzit
         public static string Signature(string service, string id, 
                                        DateTime date, OptionList options)
         {
-            string result = null;
+            StringBuilder result = new StringBuilder();
 
             if (PublicKey == null)
             {
@@ -124,8 +124,8 @@ namespace Vuzit
                 id = String.Empty;
             }
 
-            // TODO: Make msg a StringBuilder
-            string msg = (service + id + PublicKey + EpochTime(date).ToString());
+            result.Append(service).Append(id).Append(PublicKey)
+                  .Append(EpochTime(date).ToString());
 
             if (options != null)
             {
@@ -136,14 +136,12 @@ namespace Vuzit
                 {
                     if (options.Contains(item))
                     {
-                        msg += options[item];
+                        result.Append(options[item]);
                     }
                 }
             }
 
-            result = CalculateRFC2104HMAC(msg, PrivateKey);
-
-            return result;
+            return CalculateRFC2104HMAC(result.ToString(), PrivateKey);
         }
 
         /// <summary>
