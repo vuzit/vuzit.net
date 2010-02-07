@@ -40,6 +40,7 @@
 		<call target="build-dotnet-3.5" />
 		<call target="build-net-vuzitcl" />
 		<call target="build-mono-2.2" />
+		<call target="build-mono-2.4" />
 		<call target="build-vuzitcl-mono" />
 	</target>
 
@@ -63,7 +64,7 @@
 					<property name="Title" 
 						value="Vuzit.Net Library API Reference - http://github.com/vuzit/vuzit.net" />
 					<property name="CopyrightText" 
-							  value="Copyright (c) 2009 Brent R. Matzelle, Vuzit LLC" />
+							  value="Copyright (c) 2009-2010 Brent R. Matzelle, Vuzit LLC" />
 				</documenter>
 			</documenters>
 		</ndoc>
@@ -98,12 +99,30 @@
 		<call target="run-mono-build" />
 	</target>
 	
+  <!-- Sets the parameters for the Mono 2.4 DLL -->
+	<target name="build-mono-2.4">
+		<property name="build-version" value="MONO_2_4" />
+		<property name="runtime-name" value="Mono" />
+		<property name="current.runtime.config" value="mono" />
+		<property name="current.runtime.version" value="2.4" />
+		<call target="run-mono-build" />
+	</target>
+
+  <!-- Sets the parameters for the Mono 2.6 DLL -->
+	<target name="build-mono-2.6">
+		<property name="build-version" value="MONO_2_6" />
+		<property name="runtime-name" value="Mono" />
+		<property name="current.runtime.config" value="mono" />
+		<property name="current.runtime.version" value="2.6" />
+		<call target="run-mono-build" />
+	</target>
+	
   <!-- Builds the previously specified Mono build -->
 	<target name="run-mono-build">
 		<mkdir dir="${project.bin}\Vuzit.Net\Mono\${current.runtime.version}\Release" />
 		<property name="build.bin" value="${project.bin}\Vuzit.Net\Mono\${current.runtime.version}\Release" />
 
-		<exec program="gmcs.bat">
+		<exec program="\Program Files\Mono-${current.runtime.version}\bin\gmcs.bat">
 			<arg value="-target:library"/>
 			<arg value="-out:${build.bin}\${project.name}.dll"/>
 			<arg value="-reference:System.dll"/>
@@ -177,7 +196,7 @@
     <mkdir dir="${app.bin}" />
     <copy file="${build.bin}\${project.name}.dll" 
           tofile="${app.bin}\${project.name}.dll" />
-		<exec program="gmcs.bat">
+		<exec program="\Program Files\Mono-${current.runtime.version}\bin\gmcs.bat">
 			<arg value="-target:exe"/>
 			<arg value="-out:${app.bin}\VuzitCL.exe"/>
 			<arg value="-reference:System.dll"/>

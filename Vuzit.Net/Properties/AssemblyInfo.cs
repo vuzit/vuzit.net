@@ -11,6 +11,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Vuzit.Net for .NET Framework 3.5")]
 #elif (MONO_2_2)
 [assembly: AssemblyTitle("Vuzit.Net for Mono 2.2")]
+#elif (MONO_2_4)
+[assembly: AssemblyTitle("Vuzit.Net for Mono 2.4")]
+#elif (MONO_2_6)
+[assembly: AssemblyTitle("Vuzit.Net for Mono 2.6")]
 #else
 [assembly: AssemblyTitle("Vuzit.Net")]
 #endif

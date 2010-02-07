@@ -143,7 +143,6 @@ namespace VuzitCL
         /// </summary>
         static void SearchCommand(string[] args)
         {
-            string id = LastOption(args);
             string[] options = CleanArgs(args);
             ArgvParser parser = new ArgvParser(options);
 

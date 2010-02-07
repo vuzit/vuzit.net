@@ -11,7 +11,7 @@
 This is a library that allows developers to directly access the Vuzit Web 
 Service API through short commands:
 
-  http://vuzit.com/developer/documents_api
+  http://vuzit.com/developer/web_service_api
 
 Below is a basic upload example:
 
@@ -25,18 +25,18 @@ Below is a basic upload example:
 To get started all you need to do is download the code, sign up for a free 
 account (https://ssl.vuzit.com/signup) and replace the public and 
 private keys with the keys from your account.
-  
+ 
+
 --------------------------------------------------
 -- INITIAL SETUP
 --------------------------------------------------
 
-* Take the DLL for your .NET Framework version out of the Bin directory 
+* Choose the DLL for your .NET Framework version out of the Bin directory :
 
   * Bin\Vuzit.Net\DotNet\2.0\Release - DLL built with the MS .NET Framework 2.0
-
   * Bin\Vuzit.Net\DotNet\3.5\Release - DLL built with the MS .NET Framework 3.5
-
   * Bin\Vuzit.Net\Mono\2.2\Release - DLL built with the Mono 2.2 Framework
+  * Bin\Vuzit.Net\Mono\2.4\Release - DLL built with the Mono 2.4 Framework
   
 * Add the DLL as a reference in your project.  In Visual Studio right-click on 
   the References item in the project menu, click on the Browse button and 
@@ -52,6 +52,30 @@ private keys with the keys from your account.
   if it compiles without errors then you have succeeded:
 
   using Vuzit.Net;
+
+
+--------------------------------------------------
+-- BUILDING FROM SOURCE
+--------------------------------------------------
+There are several methods to build Nini.  These builds all write files to the 
+same directory structure as found in the INSTALL section above.
+
+* Visual Studio .NET
+  Open the "Vuzit.sln" file with Visual Studio.  To build the solution click
+  "Build" -> "Build Solution".
+  
+* NAnt (http://nant.sourceforge.net)
+  In the Source directory there is a Vuzit.build NAnt file.  Here is how to 
+  build for each runtime from the command line:
+  
+  To build MS .NET Framework 2.0
+  $> nant build-dotnet-2.0
+  
+  To build MS .NET Framework 3.5
+  $> nant build-dotnet-3.5
+  
+  To build Mono 2.2
+  $> nant build-mono-2.2
 
 
 --------------------------------------------------
