@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Net;
 using System.IO;
 using System.Xml;
@@ -227,6 +226,14 @@ namespace Vuzit
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Returns a list of all documents in the account.  
+        /// </summary>
+        public static Vuzit.Document[] FindAll()
+        {
+            return FindAll(new OptionList());
         }
 
         /// <summary>

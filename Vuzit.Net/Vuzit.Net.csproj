@@ -49,6 +49,7 @@
     <Compile Include="Source\Base.cs" />
     <Compile Include="Source\ClientException.cs" />
     <Compile Include="Source\Document.cs" />
+    <Compile Include="Source\Event.cs" />
     <Compile Include="Source\OptionList.cs" />
     <Compile Include="Source\Service.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

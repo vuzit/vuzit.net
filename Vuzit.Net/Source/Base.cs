@@ -42,12 +42,22 @@ namespace Vuzit
         {
             string result = null;
             XmlNode childNode = node.SelectSingleNode(key);
-            if (childNode != null)
+            if (childNode != null && childNode.InnerText.Length > 0)
             {
                 result = childNode.InnerText;
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Returns the double value of a child node or -1 if none.  
+        /// </summary>
+        protected static double NodeValueDouble(XmlNode node, string key)
+        {
+            string text = NodeValue(node, key);
+
+            return (text == null) ? -1 : Convert.ToDouble(text);
         }
 
         /// <summary>
@@ -99,6 +109,17 @@ namespace Vuzit
             options.Add("timestamp", Service.EpochTime(date).ToString());
 
             return options;
+        }
+
+        /// <summary>
+        /// Converts a Unix timestamp to a DateTime instance.  
+        /// </summary>
+        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        {
+            System.DateTime result = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            result = result.AddSeconds(unixTimeStamp).ToLocalTime();
+
+            return result;
         }
 
         /// <summary>

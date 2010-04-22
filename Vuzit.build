@@ -134,6 +134,7 @@
 			<arg value="${project.src}\Properties\AssemblyInfo.cs" />
 			<arg value="${project.src}\Source\Base.cs" />
 			<arg value="${project.src}\Source\Document.cs" />
+			<arg value="${project.src}\Source\Event.cs" />
 			<arg value="${project.src}\Source\OptionList.cs" />
 			<arg value="${project.src}\Source\ClientException.cs" />
 			<arg value="${project.src}\Source\Service.cs" />

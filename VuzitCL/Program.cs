@@ -34,6 +34,9 @@ namespace VuzitCL
                 case "load":
                     LoadCommand(args);
                     break;
+                case "event":
+                    EventCommand(args);
+                    break;
                 case "help":
                     HelpCommand(args);
                     break;
@@ -87,6 +90,84 @@ namespace VuzitCL
         }
 
         /// <summary>
+        /// Executes the event sub-command.  
+        /// </summary>
+        static void EventCommand(string[] args)
+        {
+            string id = OptionLast(args);
+            string[] options = OptionTrim(args);
+            ArgvParser parser = new ArgvParser(options);
+
+            if (!GlobalParametersLoad(parser))
+            {
+                return;
+            }
+
+            Vuzit.OptionList list = new Vuzit.OptionList();
+            if (parser.GetArg("e", "event") != null)
+            {
+                list.Add("event", parser.GetArg("e", "event"));
+            }
+            if (parser.GetArg("c", "custom") != null)
+            {
+                list.Add("custom", parser.GetArg("c", "custom"));
+            }
+            if (parser.GetArg("l", "limit") != null)
+            {
+                list.Add("limit", parser.GetArg("l", "limit"));
+            }
+            if (parser.GetArg("o", "offset") != null)
+            {
+                list.Add("offset", parser.GetArg("o", "offset"));
+            }
+
+            Vuzit.Event[] events = null;
+            try
+            {
+                 events = Vuzit.Event.FindAll(id, list);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Load failed: " + ex.Message);
+                return;
+            }
+
+            int i = 1;
+            Console.WriteLine("{0} events found", events.Length);
+            Console.WriteLine("");
+
+            string format = "{0:yyyy-MM-dd HH:mm:ss}";
+
+            foreach (Vuzit.Event e in events)
+            {
+                Console.Write("[" + String.Format(format, e.RequestedAt) + "] ");
+
+                if (e.EventType == "page_view")
+                {
+                    Console.Write(e.Duration + "s -");
+                }
+                Console.Write(e.EventType);
+
+                if (e.Page != -1)
+                {
+                    Console.Write(", p" + e.Page);
+                }
+                if (e.Custom != null)
+                {
+                    Console.Write(" (" + e.Custom + ")");
+                }
+                if (e.Referer != null)
+                {
+                    Console.Write(" - " + e.Referer.Substring(7, 8));
+                }
+                Console.Write(" - " + e.RemoteHost);
+                Console.Write(" - " + e.UserAgent.Substring(0, 8));
+                Console.WriteLine("");
+                i++;
+            }
+        }
+
+        /// <summary>
         /// Executes the help sub-command.  
         /// </summary>
         static void HelpCommand(string[] args)
@@ -101,6 +182,9 @@ namespace VuzitCL
                     break;
                 case "delete":
                     PrintUsageDelete();
+                    break;
+                case "event":
+                    PrintUsageEvent();
                     break;
                 case "search":
                     PrintUsageSearch();
@@ -335,6 +419,23 @@ namespace VuzitCL
         }
 
         /// <summary>
+        /// Prints the event sub-command usage options.  
+        /// </summary>
+        static void PrintUsageEvent()
+        {
+            Console.WriteLine("event: Load document event statistics.");
+            Console.WriteLine("usage: event [OPTIONS]");
+            Console.WriteLine("");
+            Console.WriteLine("Valid options:");
+            Console.WriteLine("  -e, --event         Event type to load");
+            Console.WriteLine("  -c, --custom        Custom value to load");
+            Console.WriteLine("  -l, --limit         Limits the results to a number");
+            Console.WriteLine("  -o, --offset        Offsets the results at this number");
+            Console.WriteLine("");
+            PrintUsageGlobal();
+        }
+
+        /// <summary>
         /// Prints the usage of the application.  
         /// </summary>
         static void PrintUsageGeneral()
@@ -347,6 +448,7 @@ namespace VuzitCL
             Console.WriteLine("Available sub-commands:");
             Console.WriteLine("");
             Console.WriteLine("  delete");
+            Console.WriteLine("  event");
             Console.WriteLine("  load");
             Console.WriteLine("  search");
             Console.WriteLine("  upload");
@@ -382,13 +484,14 @@ namespace VuzitCL
         /// </summary>
         static void PrintUsageSearch()
         {
-            Console.WriteLine("search: Upload a file to Vuzit.");
+            Console.WriteLine("search: Search for documents.");
             Console.WriteLine("usage: search [OPTIONS]");
             Console.WriteLine("");
             Console.WriteLine("Valid options:");
             Console.WriteLine("  -q, --query         Query keywords");
-            Console.WriteLine("  -l, --limit         Limits the results to a number");
             Console.WriteLine("  -o, --offset        Offsets the results at this number");
+            Console.WriteLine("  -l, --limit         Limits the results to a number");
+            Console.WriteLine("  -O, --output        Output more document info including title and excerpt");
             Console.WriteLine("");
             PrintUsageGlobal();
         }
