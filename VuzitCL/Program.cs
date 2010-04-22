@@ -73,8 +73,8 @@ namespace VuzitCL
         /// </summary>
         static void DeleteCommand(string[] args)
         {
-            string id = LastOption(args);
-            string[] options = CleanArgs(args);
+            string id = OptionLast(args);
+            string[] options = OptionTrim(args);
             ArgvParser parser = new ArgvParser(options);
 
             if (!GlobalParametersLoad(parser))
@@ -91,7 +91,7 @@ namespace VuzitCL
         /// </summary>
         static void HelpCommand(string[] args)
         {
-            switch (LastOption(args))
+            switch (OptionLast(args))
             {
                 case "upload":
                     PrintUsageUpload();
@@ -106,7 +106,7 @@ namespace VuzitCL
                     PrintUsageSearch();
                     break;
                 default:
-                    Console.WriteLine("Unknown option: " + LastOption(args));
+                    Console.WriteLine("Unknown option: " + OptionLast(args));
                     break;
             }
         }
@@ -116,8 +116,8 @@ namespace VuzitCL
         /// </summary>
         static void LoadCommand(string[] args)
         {
-            string id = LastOption(args);
-            string[] options = CleanArgs(args);
+            string id = OptionLast(args);
+            string[] options = OptionTrim(args);
             ArgvParser parser = new ArgvParser(options);
 
             if (!GlobalParametersLoad(parser))
@@ -143,7 +143,7 @@ namespace VuzitCL
         /// </summary>
         static void SearchCommand(string[] args)
         {
-            string[] options = CleanArgs(args);
+            string[] options = OptionRemoveFirst(args);
             ArgvParser parser = new ArgvParser(options);
 
             if (!GlobalParametersLoad(parser))
@@ -164,6 +164,10 @@ namespace VuzitCL
             {
                 list.Add("offset", parser.GetArg("o", "offset"));
             }
+            if (parser.GetArg("O", "output") != null)
+            {
+                list.Add("output", parser.GetArg("O", "output"));
+            }
 
             Vuzit.Document[] documents = Vuzit.Document.FindAll(list);
 
@@ -174,18 +178,18 @@ namespace VuzitCL
             foreach (Vuzit.Document document in documents)
             {
                 Console.WriteLine("LOADED [{0}]: {1}", i, document.Id);
-                Console.WriteLine("title: {0}", document.Title);
-                Console.WriteLine("subject: {0}", document.Subject);
-                Console.WriteLine("pages: {0}", document.PageCount);
-                Console.WriteLine("width: {0}", document.PageWidth);
-                Console.WriteLine("height: {0}", document.PageHeight);
-                Console.WriteLine("size: {0}", document.FileSize);
-                Console.WriteLine("status: {0}", document.Status);
-                Console.WriteLine("excerpt: {0}", document.Excerpt);
 
-                Console.WriteLine("Download URL: {0}", 
-                               Vuzit.Document.DownloadUrl(document.Id, "pdf"));
-                Console.WriteLine("");
+                if (document.PageCount != -1)
+                {
+                    Console.WriteLine("title: {0}", document.Title);
+                    Console.WriteLine("pages: {0}", document.PageCount);
+                    Console.WriteLine("size: {0}", document.FileSize);
+                    Console.WriteLine("excerpt: {0}", document.Excerpt);
+
+                    Console.WriteLine("Download URL: {0}",
+                                      Vuzit.Document.DownloadUrl(document.Id, "pdf"));
+                    Console.WriteLine("");
+                }
                 i++;
             }
         }
@@ -195,8 +199,8 @@ namespace VuzitCL
         /// </summary>
         static void UploadCommand(string[] args)
         {
-            string path = LastOption(args);
-            string[] options = CleanArgs(args);
+            string path = OptionLast(args);
+            string[] options = OptionTrim(args);
             ArgvParser parser = new ArgvParser(options);
 
             if (!GlobalParametersLoad(parser))
@@ -206,7 +210,8 @@ namespace VuzitCL
 
             Vuzit.OptionList list = new Vuzit.OptionList();
 
-            if (parser[""] != null || parser["secure"] != null)
+            // TODO: Use GetArg function?
+            if (parser["s"] != null || parser["secure"] != null)
             {
                 list.Add("secure", true);
             }
@@ -232,26 +237,6 @@ namespace VuzitCL
 
         #region Utility functions
         /// <summary>
-        /// Removes the head and trailing arguments so that the parser doesn't get confused.  
-        /// </summary>
-        static string[] CleanArgs(string[] args)
-        {
-            string[] result = new string[args.Length - 2];
-
-            int item = 0;
-            for (int i = 0; i < args.Length - 1; i++)
-            {
-                if (i != 0 && i != args.Length - 1)
-                {
-                    result[item] = args[i];
-                    item += 1;
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Loads the global parameters.  If they were not correctly added then it fails.  
         /// </summary>
         /// <param name="parser"></param>
@@ -275,7 +260,7 @@ namespace VuzitCL
             }
             Vuzit.Service.PublicKey = keys[0];
             Vuzit.Service.PrivateKey = keys[1];
-            Vuzit.Service.UserAgent = "VuzitCL .NET 1.1.0";
+            Vuzit.Service.UserAgent = "VuzitCL .NET 2.1.0";
 
             if(parser.GetArg("u", "service-url") != null)
             {
@@ -288,9 +273,49 @@ namespace VuzitCL
         /// <summary>
         /// Returns the last command option from a set of arguments.  
         /// </summary>
-        static string LastOption(string[] args)
+        static string OptionLast(string[] args)
         {
             return args[args.Length - 1];
+        }
+
+        /// <summary>
+        /// Removes the first option.  
+        /// </summary>
+        static string[] OptionRemoveFirst(string[] args)
+        {
+            string[] result = new string[args.Length - 1];
+
+            int item = 0;
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (i != 0)
+                {
+                    result[item] = args[i];
+                    item += 1;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes the head and trailing arguments so that the parser doesn't get confused.  
+        /// </summary>
+        static string[] OptionTrim(string[] args)
+        {
+            string[] result = new string[args.Length - 2];
+
+            int item = 0;
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (i != 0 && i != args.Length - 1)
+                {
+                    result[item] = args[i];
+                    item += 1;
+                }
+            }
+
+            return result;
         }
         #endregion
 

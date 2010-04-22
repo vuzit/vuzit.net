@@ -12,23 +12,26 @@
 
 using System;
 using System.Collections;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace VuzitCL
 {
-    /// <include file='ArgvParser.xml' path='//Class[@name="ArgvParser"]/docs/*' />
+    /// <summary>
+    /// Class for parsing command-line arguments.  
+    /// </summary>
     public class ArgvParser
     {
         #region Private variables
-        StringDictionary parameters;
+        Dictionary<string, string> parameters;
         #endregion
         
         #region Constructors
-        /// <include file='ArgvParser.xml' path='//Constructor[@name="Constructor"]/docs/*' />
+        /// <summary>
+        /// Base constructor for a single argument.  
+        /// </summary>
         public ArgvParser(string args)
         {
-
             Regex Extractor = new Regex(@"(['""][^""]+['""])\s*|([^\s]+)\s*",
                                         RegexOptions.Compiled);
             MatchCollection matches;
@@ -45,7 +48,9 @@ namespace VuzitCL
             }
         }
         
-        /// <include file='ArgvParser.xml' path='//Constructor[@name="ConstructorArray"]/docs/*' />
+        /// <summary>
+        /// Constructor that takes in a standard set of arguments.  
+        /// </summary>
         public ArgvParser (string[] args)
         {
             Extract (args);
@@ -53,11 +58,21 @@ namespace VuzitCL
         #endregion
         
         #region Public properties
-        /// <include file='ArgvParser.xml' path='//Property[@name="this"]/docs/*' />
+        /// <summary>
+        /// Returns the parser option or null if it does not exist.  
+        /// </summary>
         public string this [string param]
         {
-            get {
-                return parameters[param];
+            get
+            {
+                if (parameters.ContainsKey(param))
+                {
+                    return parameters[param];
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
         #endregion
@@ -85,10 +100,12 @@ namespace VuzitCL
         #endregion
 
         #region Private methods
-        // Extract command line parameters and values stored in a string array
+        /// <summary>
+        /// Extract command line parameters and values stored in a string array
+        /// </summary>
         private void Extract(string[] args)
         {
-            parameters = new StringDictionary();
+            parameters = new Dictionary<string, string>();
             Regex splitter = new Regex (@"^([/-]|--){1}(?<name>\w+)([:=])?(?<value>.+)?$",
                                         RegexOptions.Compiled);
             char[] trimChars = {'"','\''};

@@ -77,6 +77,15 @@ namespace Vuzit
         /// Creates a new exception instance.  
         /// </summary>
         /// <param name="message">Error message. </param>
+        public ClientException(string message)
+        {
+            this.message = message;
+        }
+
+        /// <summary>
+        /// Creates a new exception instance.  
+        /// </summary>
+        /// <param name="message">Error message. </param>
         /// <param name="code">Error code. </param>
         public ClientException(string message, int code)
         {

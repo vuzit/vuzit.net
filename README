@@ -98,7 +98,7 @@ Find Document Example - how to load a document
   Vuzit.Service.PublicKey = "YOUR_PUBLIC_API_KEY";  
   Vuzit.Service.PrivateKey = "YOUR_PRIVATE_API_KEY";  
 
-  Vuzit.Document doc = Vuzit.Document.FindById("DOCUMENT_ID");
+  Vuzit.Document doc = Vuzit.Document.Find("DOCUMENT_ID");
 
   Console.WriteLine("Document id: {0}", doc.Id);
   Console.WriteLine("Document title: {0}", doc.Title);

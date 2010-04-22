@@ -61,31 +61,15 @@ namespace Vuzit
         }
 
         /// <summary>
-        /// Returns a URL but defaults the extension to 'xml'.  
-        /// </summary>
-        protected static string ParametersToUrl(string resource,
-                                                OptionList parameters,
-                                                string webId)
-        {
-            return ParametersToUrl(resource, parameters, webId, "xml");
-        }
-
-        /// <summary>
         /// Changes an array (hash table) of parameters to a url.  
         /// </summary>
-        protected static string ParametersToUrl(string resource, 
-                                                OptionList parameters, 
-                                                string webId,
-                                                string extension)
+        protected static string ParametersToUrl(string baseUrl, 
+                                                OptionList parameters)
         {
             StringBuilder result = new StringBuilder();
 
-            result.Append(Service.ServiceUrl).Append("/").Append(resource);
-            if (webId != null)
-            {
-                result.Append("/").Append(webId);
-            }
-            result.Append(".").Append(extension).Append("?");
+            result.Append(Service.ServiceUrl).Append("/");
+            result.Append(baseUrl).Append("?");
 
             foreach (string key in parameters.Keys)
             {

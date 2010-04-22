@@ -10,7 +10,7 @@ namespace Vuzit
 {
     /// <summary>
     /// Class for uploading, loading, and deleting documents using the Vuzit 
-    /// Web Service API: http://vuzit.com/developer/documents_api.
+    /// Web Service API.
     /// </summary>
     public sealed class Document : Vuzit.Base
     {
@@ -105,12 +105,16 @@ namespace Vuzit
         /// Deletes a document by the ID.  Returns true if it succeeded.  It 
         /// throws a Vuzit_Exception on failure.
         /// </summary>
-        /// <param name="documentId">ID of the document to destroy. </param>
         public static void Destroy(string webId)
         {
+            if (webId == null)
+            {
+                throw new Vuzit.ClientException("webId cannot be null");
+            }
+
             OptionList parameters = PostParameters(new OptionList(), "destroy", webId);
 
-            string url = ParametersToUrl("documents", parameters, webId);
+            string url = ParametersToUrl("documents/" + webId + ".xml", parameters);
             HttpWebRequest request = WebRequestBuild(url);
             request.UserAgent = Service.UserAgent;
             request.Method = "DELETE";
@@ -141,18 +145,13 @@ namespace Vuzit
         /// </summary>
         public static string DownloadUrl(string webId, string fileExtension)
         {
+            if (webId == null)
+            {
+                throw new Vuzit.ClientException("webId cannot be null");
+            }
+
             OptionList parameters = PostParameters(new OptionList(), "show", webId);
-            string result = ParametersToUrl("documents", parameters, webId, fileExtension);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Finds a document by the ID.  Deprecated.  
-        /// </summary>
-        public static Vuzit.Document FindById(string webId)
-        {
-            return Find(webId);
+            return ParametersToUrl("documents/" + webId + "." + fileExtension, parameters);
         }
 
         /// <summary>
@@ -166,14 +165,17 @@ namespace Vuzit
         /// <summary>
         /// Finds a document by the ID.  It throws a Vuzit.Exception on failure. 
         /// </summary>
-        /// <param name="documentId">Id of the document. </param>
         public static Vuzit.Document Find(string webId, OptionList options)
         {
+            if (webId == null)
+            {
+                throw new Vuzit.ClientException("webId cannot be null");
+            }
             Vuzit.Document result = null;
 
             OptionList parameters = PostParameters(options, "show", webId);
 
-            string url = ParametersToUrl("documents", parameters, webId);
+            string url = ParametersToUrl("documents/" + webId + ".xml", parameters);
             HttpWebRequest request = WebRequestBuild(url);
             request.UserAgent = Service.UserAgent;
             request.Method = "GET";
@@ -235,9 +237,8 @@ namespace Vuzit
             List<Vuzit.Document> result = new List<Vuzit.Document>();
 
             OptionList parameters = PostParameters(options, "index", null);
-            parameters.Add("output", "summary");
 
-            string url = ParametersToUrl("documents", parameters, null);
+            string url = ParametersToUrl("documents.xml", parameters);
             HttpWebRequest request = WebRequestBuild(url);
             request.UserAgent = Service.UserAgent;
             request.Method = "GET";
@@ -294,6 +295,11 @@ namespace Vuzit
         /// </summary>
         public static Vuzit.Document Upload(Stream stream, OptionList options)
         {
+            if (stream == null)
+            {
+                throw new Vuzit.ClientException("stream cannot be null");
+            }
+
             Vuzit.Document result = new Vuzit.Document();
 
             if (!options.Contains("file_name"))
@@ -303,7 +309,7 @@ namespace Vuzit
 
             OptionList parameters = PostParameters(options, "create", null);
 
-            string url = ParametersToUrl("documents", parameters, null);
+            string url = ParametersToUrl("documents.xml", parameters);
             string xml = UploadFile(stream, url, options["file_name"], "upload", null,
                                     new CookieContainer());
 
@@ -327,35 +333,6 @@ namespace Vuzit
             result.id = node.InnerText;
 
             return result;
-        }
-
-        /// <summary>
-        /// Upload a document via a Stream.  
-        /// </summary>
-        public static Vuzit.Document Upload(Stream stream, string fileType,
-                                            string fileName, bool secure)
-        {
-            return Upload(stream, new OptionList()
-                                       .Add("file_name", fileName)
-                                       .Add("file_type", fileType)
-                                       .Add("secure", secure));
-        }
-
-        /// <summary>
-        /// Upload a file but sets the default document name (default: document.{fileType}).  
-        /// </summary>
-        public static Vuzit.Document Upload(Stream stream, string fileType, bool secure)
-        {
-            return Upload(stream, fileType, null, secure);
-        }
-
-        /// <summary>
-        /// Upload a file but sets the default document name 
-        /// (default: document.{fileType}) and security (default: true).  
-        /// </summary>
-        public static Vuzit.Document Upload(Stream stream, string fileType)
-        {
-            return Upload(stream, fileType, null, true);
         }
 
         /// <summary>
@@ -384,30 +361,12 @@ namespace Vuzit
         }
 
         /// <summary>
-        /// Uploads a file to Vuzit. It throws a <Vuzit.Exception> on failure.
-        /// </summary>
-        public static Vuzit.Document Upload(string path, bool secure, string fileType)
-        {
-            return Upload(path, new OptionList()
-                                     .Add("file_type", fileType)
-                                     .Add("secure", secure));
-        }
-
-        /// <summary>
-        /// Uploads a document with no content type.  
-        /// </summary>
-        public static Vuzit.Document Upload(string path, bool secure)
-        {
-            return Upload(path, secure, null);
-        }
-
-        /// <summary>
         /// Uploads a document with all of the default settings: secure 
         /// on and no content type. 
         /// </summary>
         public static Vuzit.Document Upload(string path)
         {
-            return Upload(path, true, null);
+            return Upload(path, new OptionList());
         }
         #endregion
 
@@ -418,14 +377,14 @@ namespace Vuzit
         private static Vuzit.Document NodeToDocument(XmlNode rootNode)
         {
             Vuzit.Document result = new Vuzit.Document();
-            XmlNode node = rootNode.SelectSingleNode("title");
+            XmlNode node = rootNode.SelectSingleNode("web_id");
 
             if (node == null)
             {
-                throw new Vuzit.ClientException("No node data in response", 0);
+                throw new Vuzit.ClientException("No web_id in response", 0);
             }
-            result.title = node.InnerText;
-            result.id = NodeValue(rootNode, "web_id");
+            result.id = node.InnerText;
+            result.title = NodeValue(rootNode, "title");
             result.subject = NodeValue(rootNode, "subject");
             result.pageCount = NodeValueInt(rootNode, "page_count");
             result.pageWidth = NodeValueInt(rootNode, "width");
