@@ -40,6 +40,9 @@ namespace VuzitCL
                 case "help":
                     HelpCommand(args);
                     break;
+                case "page":
+                    PageCommand(args);
+                    break;
                 case "search":
                     SearchCommand(args);
                     break;
@@ -186,6 +189,9 @@ namespace VuzitCL
                 case "event":
                     PrintUsageEvent();
                     break;
+                case "page":
+                    PrintUsagePage();
+                    break;
                 case "search":
                     PrintUsageSearch();
                     break;
@@ -220,6 +226,56 @@ namespace VuzitCL
             Console.WriteLine("status: {0}", document.Status);
 
             Console.WriteLine("Download URL: {0}", Vuzit.Document.DownloadUrl(id, "pdf"));
+        }
+
+        /// <summary>
+        /// Executes the page sub-command.  
+        /// </summary>
+        static void PageCommand(string[] args)
+        {
+            string id = OptionLast(args);
+            string[] options = OptionTrim(args);
+            ArgvParser parser = new ArgvParser(options);
+
+            if (!GlobalParametersLoad(parser))
+            {
+                return;
+            }
+
+            Vuzit.OptionList list = new Vuzit.OptionList();
+            if (parser.GetArg("i", "included") != null)
+            {
+                list.Add("included_pages", parser.GetArg("i", "included"));
+            }
+            if (parser.GetArg("l", "limit") != null)
+            {
+                list.Add("limit", parser.GetArg("l", "limit"));
+            }
+            if (parser.GetArg("o", "offset") != null)
+            {
+                list.Add("offset", parser.GetArg("o", "offset"));
+            }
+
+            Vuzit.Page[] pages = null;
+            try
+            {
+                pages = Vuzit.Page.FindAll(id, list);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Load failed: " + ex.Message);
+                return;
+            }
+
+            Console.WriteLine("{0} pages found", pages.Length);
+            Console.WriteLine("");
+
+            foreach (Vuzit.Page page in pages)
+            {
+                Console.WriteLine("Page: " + page.Number);
+                Console.WriteLine(page.Text);
+                Console.WriteLine("");
+            }
         }
 
         /// <summary>
@@ -450,6 +506,7 @@ namespace VuzitCL
             Console.WriteLine("  delete");
             Console.WriteLine("  event");
             Console.WriteLine("  load");
+            Console.WriteLine("  page");
             Console.WriteLine("  search");
             Console.WriteLine("  upload");
             Console.WriteLine("  help");
@@ -475,6 +532,22 @@ namespace VuzitCL
             Console.WriteLine("");
             Console.WriteLine("Valid options:");
             Console.WriteLine("  none");
+            Console.WriteLine("");
+            PrintUsageGlobal();
+        }
+
+        /// <summary>
+        /// Prints the page sub-command usage options.  
+        /// </summary>
+        static void PrintUsagePage()
+        {
+            Console.WriteLine("page: Load document page text.");
+            Console.WriteLine("usage: page [OPTIONS]");
+            Console.WriteLine("");
+            Console.WriteLine("Valid options:");
+            Console.WriteLine("  -i, --included      Set range of pages to load (e.g '5,10-19')");
+            Console.WriteLine("  -o, --offset        Offsets the results at this number");
+            Console.WriteLine("  -l, --limit         Limits the results to a number");
             Console.WriteLine("");
             PrintUsageGlobal();
         }
